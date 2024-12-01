@@ -1,12 +1,46 @@
 ---
 toc: false
+#listing:
+  #- id: project-listing
+    #contents:
+      #- "/projects/*.qmd"
+    #sort: false
+    #sort-ui: false
+    #type: table
+    #fields:
+      #- title
+    #categories: false
 ---
 
-## Project 1
+## Project 1: Data Analysis of California Fiscal Health in 2019
 
-Here is my [project: "pqnumber" Calculator](/projects/project1.qmd)
+This analysis examines the fiscal health of cities across California, focusing on key economic indicators such as general fund reserves, pension obligations, and debt burden. In addition to evaluating overall city rankings and regional patterns across the North, Central, and South regions, we also analyzed how cities surrounding the richest and poorest cities perform, exploring potential influences or trends. Using regression analysis for the final model, we identified significant predictors of fiscal health and their relationships.
+
+Here is my project for region analysis part: [Data Analysis of California Fiscal Health in 2019](/projects/project1.qmd)
+
+## Project 2: "pqnumber" Calculator
+
+To simulate how the computer handle the computation with large floating point numbers we define pqnumber objects to keep large numbers and show the process of calculating. This object should have four integer components. The first one is either +1 or −1. It gives the sign of the number. The second and third are p and q. And the fourth component is an integer vector of p + q + 1 integers between zero and nine.
+
+Here is my showing project: ["pqnumber" Calculator](/projects/project2.qmd)
 
 
-## Project 2
+## Project 3: Boost or Rest: How Caffeine and Sleep Influence Problem-Solving?
 
-Here is my [project 2](/projects/project2.qmd)
+The study investigates the influence of caffeine intake and nap duration
+on problem-solving skills among islanders aged 18 to 28. By utilizing a Two-Way Randomized Block Design, participants were assigned to one of three caffeine treatments (high, low, placebo) and one of two nap durations (15 minutes, 60 minutes).
+
+Here is my report: [Boost or Rest: How Caffeine and Sleep Influence Problem-Solving?](/projects/101B.pdf)
+
+## Project 4: Data Analysis of Life Expectancy in 2007
+
+As we are experiencing a better lifestyle now, we do care more about how well we can maintain that quality of life and how long we can live to enjoy our lives. For this report, we want to study how the status of developed/developing countries, BMI, alcohol consumption, general government expenditure on health, thinness among children and adolescents for Age 10 to 19, and Hepatitis B coverage affected the life expectancy in 2007 to understand different factors contributing to health problems globally. 
+
+Here is my report: [Data Analysis of Life Expectancy in 2007](/projects/101A.pdf)
+
+## Related Course:
+
+Statistical Reasoning, Data Analysis and Regression, Statistical Models and Data Mining, Computational Statistics with R, Linear Model, Monte Carlo Methods, Computation and Optimization for Statistics, Design and Analysis of Experiment, Real Analysis, Linear Algebra, Differential Equations, Graph Theory, Combinatorics Analysis, Regression, Stochastic Process
+
+<!-- :::project-listing
+::: -->

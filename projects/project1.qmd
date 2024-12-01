@@ -1,489 +1,180 @@
 ---
-tittle: "The 'pqnumber' Calculator"
+title: "Data Analysis of California Fiscal Health in 2019"
 ---
-This project is about a 'pqnumber' Calculator.
 
-To simulate how the computer handle the computation with large floating point numbers we define pqnumber objects to keep large numbers. This object should have four integer components. The first one is either +1 or −1. It gives the sign of the number. The second and third are p and
-q. And the fourth component is an integer vector of p + q + 1 integers between zero and nine. For example, we can use the following object x to keep the number 87654.321.
+```{r, warning=FALSE}
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(tidyr)
+library(gridExtra)
 
-x <- structure(list(sign = 1, p = 3, q = 4, nums = 1:8), class = "pqnumber")
-
-p = 3 and q = 4 with nums = 1:8 has the decimal value:
-0.001 + 0.02 + 0.3 + 4 + 50 + 600 + 7000 + 80000 = 87654.321
-
-```{r, echo=FALSE}
-pqnumber <- function(sign, p, q, nums) {
-#This is a constructor function that create a pqnumber object
-#to keep large numbers.
-#Args:
-#sign: An integer (-1 or 1)
-#p: A non-negative integer with length 1
-#q: A non-negative integer with length 1
-#nums: A non-negative integer with length 1
-#Return:
-#A list object with length 4
-  if(!is.numeric(sign) | !is.numeric(p) | !is.numeric(q) | !is.numeric(nums)){
-    stop("All input should be numeric")
-  }
-  if(length(sign) != 1){
-    stop("The length of the sign must be 1")
-  }
-  if(sign != 1 & sign != -1){
-    stop("Sign should be +1 or -1")
-  }
-  if(length(p) != 1 | length(q) != 1){
-    stop("p and q should have length 1")
-  }
-  if(p < 0 | q < 0 | p%%1 != 0 | q%%1 != 0){
-    stop("p and q should be non-negative integers")
-  }
-  if(length(nums) != p + q + 1){
-    stop("Length of nums vector should be equal to p + q + 1")
-  }
-  if(!all(nums >= 0 & nums <= 9)){
-    stop("Every elements in nums vector should be between 0 and 9")
-  }
-  structure(list(sign = sign, p = p, q = q, nums = nums), class = "pqnumber")
-}
-
-is_pqnumber <- function(x) {
-#This is a predicate function that tests if the object belong 
-#to pqnumber class
-#Args:
-#x: An object with any dimension
-#Return:
-#A logical value(TRUE or FALSE)
-  inherits(x, "pqnumber")
-}
-
-print.pqnumber <- function(x, DEC = FALSE){
-#This function prints the pqnumber object with its decimal value
-#Args:
-#x: An single pqnumber object
-#DEC: A logical value
-#Return:
-#A single double value
-  if(!is_pqnumber(x)){
-    stop("The input must be a pqnumber object")
-  }
-  if(!is.logical(DEC)){
-    stop("The DEC must be a logical value")
-  }
-  if(DEC){
-    dec_val <- 0
-    d <- 0
-    for(i in -(x$p):x$q){
-      d <- d + 1
-      dec_val <- dec_val + x$nums[d]*10^i
-    }
-    if(x$sign == -1){
-      dec_val <- -dec_val
-    }
-    print(dec_val, digit = x$p+x$q+1)
-  }
-  else{
-    cat("sign =",x$sign,"\np =",x$p,"\nq =",x$q,"\nnums =",x$nums,"\n")
-  }
-}
-
-as_pqnumber <- function(x,p,q){
-#This function creates a generic function "as_pqnumber"
-#Args:
-#x: a numeric value
-#p: an non-negative integer
-#q: an non-negative integer
-  UseMethod("as_pqnumber")
-}
-
-as_pqnumber.numeric <- function(x,p,q){
-#This is a coercion function that forces an object to belong to
-#pqnumber class.
-#Args:
-#x: A double value
-#p: A non-negative integer
-#q: A non-negative integer
-#Return:
-#A list object with length 4 belongs to pqnumber class
-  if(!is.numeric(x) | !is.numeric(p) | !is.numeric(q)){
-    stop("All of the input should be numeric numbers")
-  }
-  if(length(x) != 1){
-    stop("The input should have length 1")
-  }
-  if(length(p) != 1 | length(q) != 1){
-    stop("p and q should have length 1")
-  }
-  if (p < 0 | q < 0 | p%%1 != 0 | q%%1 != 0) {
-    stop("p and q should be non-negative integers")
-  }
-  sign <- -1
-  if(x >= 0){
-    sign <- 1
-  }
-  dec_nums <- rep(0,p)
-  int_nums <- rep(0,q+1)
-  abs_x <- abs(x)
-  d <- strsplit(format(abs_x,digits = p+q+2),"[.]")[[1]]
-  if(x %% 1 != 0){
-    dec <- strsplit(d[2],"")[[1]]
-    while(length(dec) > length(dec_nums)){
-      dec <- dec[-length(dec)]
-    }
-    for(i in 1:length(dec)){
-      dec_nums[i] <- dec[i]
-    }
-    dec_nums <- rev(dec_nums)
-  }
-  int <- rev(strsplit(d[1],"")[[1]])
-  if(length(int) > 1+q){
-    stop("The digits of the integer part of x cannot be more than q+1")
-  }
-  for(i in 1:length(int)){
-    int_nums[i] <- int[i]
-  }
-  nums <- as.integer(c(dec_nums, int_nums))
-  pqnumber(sign,p,q,nums)
-}
-
-as_numeric <- function(x){
-#This function creates a generic function "as_numeric"
-#Args:
-#x: Any input
-  UseMethod("as_numeric")
-}
-
-as_numeric.pqnumber <- function(x){
-#This function coerces a pqnumber object to be a numeric vector.
-#Args:
-#x: A pqnumber class' object
-#Return:
-#A numeric vector
-  if(!is_pqnumber(x)){
-    stop("The input must be a pqnumber object")
-  }
-  print(x,DEC = TRUE)
-}
-```
-
-```{r, echo=FALSE}
-carryover <- function(large_sum,i){
-#This function help to move the extra digits in the appropriate way
-#Args:
-#large_sum: a numeric vector
-#i: an integer larger than 1
-  new1 <- large_sum[i]%%10
-  carry <- floor(large_sum[i]/10)
-  new2 <- large_sum[i+1]+carry
-  c(new1,new2)
-}
-
-borrowing <- function(neg_vec, i){
-#This function help to move the digits from another digit
-#Args:
-#neg_vec: a numeric vector
-#i: an integer larger than 1
-  new1 <- neg_vec[i]+10
-  new2 <- neg_vec[i+1]-1
-  c(new1,new2)
-}
-
-add <- function(x,y){
-#This function help to calculate two pqnumber adds together.
-#Args:
-#x,y: 2 pqnumber object with base type is list
-#Return:
-#A pqnumber object
-  if(!is_pqnumber(x) |!is_pqnumber(y)){
-    stop("The inputs must be two pqnumber")
-  }
-  zero_x_ahead <- c()
-  zero_y_ahead <- c()
-  zero_x_behind <- c()
-  zero_y_behind <- c()
-  max_p <- x$p
-  max_q <- x$q
-  if(x$p < y$p){
-    diff <- y$p - x$p
-    zero_x_ahead <- rep(0,diff)
-    max_p <- y$p
-  }
-  if(x$p > y$p){
-    diff <- x$p - y$p
-    zero_y_ahead <- rep(0,diff)
-  }
-  if(x$q < y$q){
-    diff_2 <- y$q - x$q
-    zero_x_behind <- rep(0,diff_2)
-    max_q <- y$q
-  }
-  if(x$q > y$q){
-    diff_2 <- x$q - y$q
-    zero_y_behind <- rep(0,diff_2)
-  }
-  x_nums <- c(zero_x_ahead, x$nums, zero_x_behind)
-  y_nums <- c(zero_y_ahead, y$nums, zero_y_behind)
-  if(x$sign == y$sign){
-    new_nums <- x_nums + y_nums
-    length <- length(new_nums)
-    for(i in 1:length){
-      if(new_nums[i] >= 10){
-        if(i+1 > length){
-          new_nums[i] <- new_nums[i]%%10
-          new_nums <- c(new_nums,1)
-          max_q <- max_q+1
-        }
-        else{
-          c <- carryover(new_nums,i)
-          new_nums[i] <- c[1]
-          new_nums[i+1] <- c[2]
-        }
-      }
-    }
-    sign <- x$sign
-  }
-  else{
-    a <- 0
-    b <- length(x_nums)
-    large <- y_nums
-    small <- x_nums
-    sign <- 1
-    while(a == 0 & b > 0){
-      if(x_nums[b]>y_nums[b]){
-        a <- 1
-        large <- x_nums
-        small <- y_nums
-        sign <- x$sign
-      }
-      if(x_nums[b]<y_nums[b]){
-        a <- 1
-        large <- y_nums
-        small <- x_nums
-        sign <- y$sign
-      }
-      b <- b-1
-    }
-    new_nums <- large - small
-    length <- length(new_nums)
-    for(i in 1:length){
-      if(new_nums[i] < 0){
-        d <- borrowing(new_nums,i)
-        new_nums[i] <- d[1]
-        new_nums[i+1] <- d[2]
-      }
-    }
-  }
-  if(length(new_nums)>.Machine$integer.max){
-    stop("Overflow")
-  }
-  pqnumber(sign,max_p,max_q,new_nums)
-}
-
-subtract <- function(x,y){
-#This function help to calculate one pqnumber subtracts another.
-#Args:
-#x,y: 2 pqnumber object with base type is list
-#Return:
-#A pqnumber object
-  if(!is_pqnumber(x) |!is_pqnumber(y)){
-    stop("The inputs must be two pqnumber")
-  }
-  zero_x_ahead <- c()
-  zero_y_ahead <- c()
-  zero_x_behind <- c()
-  zero_y_behind <- c()
-  max_p <- x$p
-  max_q <- x$q
-  if(x$p < y$p){
-    diff <- y$p - x$p
-    zero_x_ahead <- rep(0,diff)
-    max_p <- y$p
-  }
-  if(x$p > y$p){
-    diff <- x$p - y$p
-    zero_y_ahead <- rep(0,diff)
-  }
-  if(x$q < y$q){
-    diff_2 <- y$q - x$q
-    zero_x_behind <- rep(0,diff_2)
-    max_q <- y$q
-  }
-  if(x$q > y$q){
-    diff_2 <- x$q - y$q
-    zero_y_behind <- rep(0,diff_2)
-  }
-  x_nums <- c(zero_x_ahead, x$nums, zero_x_behind)
-  y_nums <- c(zero_y_ahead, y$nums, zero_y_behind)
-  if(x$sign != y$sign){
-    new_nums <- x_nums + y_nums
-    length <- length(new_nums)
-    for(i in 1:length){
-      if(new_nums[i] >= 10){
-        if(i+1 > length){
-          new_nums[i] <- new_nums[i]%%10
-          new_nums <- c(new_nums,1)
-          max_q <- max_q+1
-        }
-        else{
-          c <- carryover(new_nums,i)
-          new_nums[i] <- c[1]
-          new_nums[i+1] <- c[2]
-        }
-      }
-    }
-    sign <- x$sign
-  }
-  else{
-    a <- 0
-    b <- length(x_nums)
-    large <- y_nums
-    small <- x_nums
-    sign <- 1
-    while(a == 0 & b > 0){
-      if(x_nums[b]>y_nums[b]){
-        a <- 1
-        large <- x_nums
-        small <- y_nums
-        sign <- x$sign
-      }
-      if(x_nums[b]<y_nums[b]){
-        a <- 1
-        large <- y_nums
-        small <- x_nums
-        sign <- -x$sign
-      }
-      b <- b-1
-    }
-    new_nums <- large - small
-    length <- length(new_nums)
-    for(i in 1:length){
-      if(new_nums[i] < 0){
-        d <- borrowing(new_nums,i)
-        new_nums[i] <- d[1]
-        new_nums[i+1] <- d[2]
-      }
-    }
-  }
-  if(length(new_nums)>.Machine$integer.max){
-    stop("Overflow")
-  }
-  pqnumber(sign,max_p,max_q,new_nums)
-}
-```
-
-```{r, echo=FALSE}
-multiply <- function(x,y){
-#This function help to calculate two pqnumber mutiplies together.
-#Args:
-#x,y: 2 pqnumber object with base type is list
-#Return:
-#A pqnumber object
-  p <- x$p+y$p
-  sign <- x$sign*y$sign
-  new_num <- c()
-  new_pq <- pqnumber(1,0,0,0)
-  for(i in 1:length(y$nums)){
-    new_nums <- c()
-    for(j in 1:length(x$nums)){
-      new_nums[j] <- x$nums[j]*y$nums[i]*10^(i-1)
-    }
-    length <- length(new_nums)
-    for(k in 1:length(new_nums)){
-      if(new_nums[k] >= 10){
-        if(k+1 > length){
-          plus <- floor(new_nums[k]/10)
-          new_nums[k] <- new_nums[k]%%10
-          new_nums <- c(new_nums,plus)
-          index <- k+1
-          while(plus>=10){
-            plus <- floor(plus/10)
-            new_nums[index] <- new_nums[index]%%10
-            new_nums <- c(new_nums,plus)
-            index <- index+1
-          }
-        }
-        else{
-          c <- carryover(new_nums,k)
-          new_nums[k] <- c[1]
-          new_nums[k+1] <- c[2]
-        }
-      }
-    }
-    new_num <- new_nums
-    n_q <- length(new_num)-1
-    old_pq <- pqnumber(1,0,n_q,new_num)
-    new_pq <- add(old_pq,new_pq)
-  }
-  nums <- new_pq$nums
-  if(p >= length(new_pq$nums)){
-    zero <- rep(0,p-length(nums)+1)
-    nums <- c(nums,zero)
-  }
-  q <- length(nums)-1-p
-  if(length(new_nums)>.Machine$integer.max){
-    stop("Overflow")
-  }
-  pqnumber(sign,p,q,nums)
-}
+fin_2019 <- read_csv("fin_2019.csv")
+fin_2019 <- fin_2019[fin_2019$Overall_Points != 0, ]
 ```
 
 ```{r}
-a <- pqnumber(1,3,4,1:8)
-b <- pqnumber(1,6,0,c(3,9,5,1,4,1,3))
-c <- pqnumber(-1,5,1,c(2,8,2,8,1,7,2))
-is_pqnumber(a)
-is_pqnumber(b)
-is_pqnumber(c)
-print(a,DEC = TRUE)
-print(b,DEC = TRUE)
-print(c,DEC = TRUE)
-print(c,DEC = FALSE)
-```
-```{r, error=TRUE}
-#as_pqnumber(87654.321,3,3)
+summary_stats <- function(column) {
+  mean_val <- mean(column, na.rm = TRUE)
+  median_val <- median(column, na.rm = TRUE)
+  lower_bound <- quantile(column, 0.25, na.rm = TRUE)
+  upper_bound <- quantile(column, 0.75, na.rm = TRUE)
+  return(c(mean = mean_val, median = median_val, lower_bound = lower_bound, upper_bound = upper_bound))
+}
 
-as_pqnumber(3.14159265358,11,0)
-
-as_pqnumber(-27.18282,5,1)
-
-as_pqnumber(0.1234,4,2)
-
-as_pqnumber(1000,2,3)
-
-as_pqnumber(1000,0,3)
-
-as_pqnumber(3.145,2,0)
-
-as_pqnumber(12345,0,4)
-
-as_pqnumber(123.001,4,4)
-
-as_pqnumber(123.001,2,4)
-
+summary_stats(fin_2019$Overall_Points)
+summary_stats(fin_2019$General_Fund_Reserves_Points)
+summary_stats(fin_2019$Debt_Burden_Points)
+summary_stats(fin_2019$Liquidity_Points)
+summary_stats(fin_2019$Pension_Obligations_Points)
+summary_stats(fin_2019$OPEB_Funding_Points)
+summary_stats(fin_2019$Pension_Costs_Points)
+summary_stats(fin_2019$Future_Pension_Costs_Points)
 ```
 
 ```{r}
-m <- pqnumber(-1,1,0,c(3,4))
-n <- pqnumber(1,0,1,c(6,9))
-l <- pqnumber(-1,0,1,c(6,9))
-o <- pqnumber(1,1,0,c(3,4))
-add(n,m)
-add(n,o)
-add(pqnumber(1,0,0,0),m) # 0 - 4.3
-add(pqnumber(1,1,0,c(1,0)),pqnumber(1,1,0,c(1,0))) # 0.1 + 0.1
-subtract(m,l)
-subtract(l,m)
-subtract(m,n)
-subtract(pqnumber(1,0,0,2),pqnumber(1,0,0,2)) # 2 - 2
+# Divide into 3 regions
+fin_2019$Region <- with(fin_2019, ifelse(
+  Latitude >= 38, "North",
+  ifelse(Latitude >= 35 & Latitude < 38, "Central", "South")
+))
+fin_2019$Region <- factor(fin_2019$Region, levels = c("North", "Central", "South"))
+region_means <- fin_2019 %>%
+  group_by(Region) %>%
+  summarise(mean_overall_points = mean(Overall_Points, na.rm = TRUE))
 ```
 
 ```{r}
-x <- pqnumber(1,1,1,c(5,4,1)) # 14.5
-y <- pqnumber(1,1,3,c(3,6,1,1,1)) # 1116.3
-as_numeric(multiply(x,y)) # 14.5 * 1116.3
-as_numeric(multiply(pqnumber(1,0,3,c(0,0,0,1)),m)) # 1000 * -4.3
-multiply(pqnumber(1,2,0,c(1,0,0)),m) # 0.01 * -4.3
-multiply(m,pqnumber(1,1,0,c(1,0))) # -4.3 * 0.1
-as_numeric(multiply(pqnumber(1,1,0,c(1,0)),pqnumber(1,2,0,c(1,0,0))))
-multiply(pqnumber(1,0,2,c(0,0,2)),pqnumber(1,0,2,c(0,0,3)))
+fin_2019 <- fin_2019 %>%
+  mutate(
+    Risk_Level = case_when(
+      Overall_Risk == "High" ~ "High",
+      Overall_Risk == "Moderate" ~ "Moderate",
+      Overall_Risk == "Low" ~ "Low",
+      TRUE ~ NA_character_
+    ),
+    Risk_Level = factor(Risk_Level, levels = c("High", "Moderate", "Low"))
+  ) %>%
+  filter(!is.na(Risk_Level))
+
+
+california_map <- map_data("state") %>% filter(region == "california")
+
+density_plot <- ggplot(fin_2019, aes(x = Longitude, y = Latitude)) +
+  geom_polygon(data = california_map, aes(x = long, y = lat, group = group),
+               fill = "lightgray", color = "black") + 
+  stat_density2d(aes(fill = after_stat(level)), geom = "polygon", alpha = 0.5) +
+  scale_fill_gradient(low = "yellow", high = "red") +
+  labs(title = "Density of High-Risk Cities by Risk Level in 2019",
+       x = "Longitude", y = "Latitude") +
+  theme_minimal() +
+  facet_wrap(~Risk_Level) +
+  theme(
+    #panel.background = element_rect(fill = "white", color = NA),
+    #plot.background = element_rect(fill = "white", color = NA),
+    #strip.text = element_text(size = 12, face = "bold")
+  )
+
+density_plot
 ```
 
+```{r}
+box_plot <- ggplot(fin_2019, aes(x = Region, y = Overall_Points, fill = Region)) +
+  geom_boxplot(outlier.color = "red", outlier.size = 2) +
+  geom_line(data = region_means, aes(x = Region, y = mean_overall_points, group = 1), 
+            color = "pink", size = 1) +
+  geom_point(data = region_means, aes(x = Region, y = mean_overall_points), 
+             color = "pink", size = 3) +
+  labs(title = "Overall Points by Region with Mean Line",
+       x = "Region",
+       y = "Overall Points") +
+  theme_minimal(base_size = 14) +
+  scale_fill_manual(values = c("skyblue", "lightgreen", "orange")) +
+  theme(legend.position = "none")
+#ggsave("Boxplot_of_Overall_Points_by_Region.png", plot = box_plot, width = 8, height = 6)
+box_plot
+```
+
+```{r}
+region_means <- fin_2019 %>%
+  group_by(Region) %>%
+  summarise(across(c(General_Fund_Reserves_Points, Pension_Obligations_Points,
+                     Debt_Burden_Points, OPEB_Funding_Points, Future_Pension_Costs_Points,
+                     Liquidity_Points, Pension_Costs_Points), mean, na.rm = TRUE))
+
+long_data <- melt(region_means, id.vars = "Region")
+
+bar_chart <- ggplot(long_data, aes(x = Region, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Comparison of Scores by Region",
+       x = "Region", y = "Average Points") +
+  theme_minimal()
+#ggsave("Bar_Chart_of_Regional_Average_Scores_by_Indicator.png", plot = bar_chart, width = 8, height = 6)
+bar_chart
+```
+
+```{r}
+regression_data <- fin_2019 %>%
+  select(Region, Overall_Points, General_Fund_Reserves_Points, Pension_Obligations_Points,
+         Debt_Burden_Points, OPEB_Funding_Points, Future_Pension_Costs_Points,
+         Liquidity_Points, Pension_Costs_Points)
+
+long_data <- melt(regression_data, id.vars = c("Region", "Overall_Points"))
+
+regression_plot <- ggplot(long_data, aes(x = value, y = Overall_Points, color = Region)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, aes(group = Region)) +
+  facet_wrap(~variable, scales = "free_x") +
+  labs(title = "Regression Lines for Overall Points by Region",
+       x = "Independent Variables",
+       y = "Overall Points") +
+  theme_minimal()
+#ggsave("Regression_of_Region_by_Indicator.png", plot = regression_plot, width = 8, height = 6)
+regression_plot
+```
+
+```{r}
+risk_levels <- c("low", "moderate", "high")
+all_regions <- c("North", "Central", "South")
+
+
+pie_data <- fin_2019 %>%
+  group_by(Region, Risk_Level) %>%
+  summarise(Total_Risk = n(), .groups = "drop") %>%
+  group_by(Region) %>%
+  mutate(Percentage = Total_Risk / sum(Total_Risk) * 100) %>%
+  complete(Risk_Level = risk_levels, fill = list(Total_Risk = 0, Percentage = 0)) # 
+```
+
+```{r}
+risk_colors <- c("Low" = "#A6CEE3", "Moderate" = "#FDBF6F", "High" = "#FB9A99")
+
+north_pie <- ggplot(pie_data %>% filter(Region == "North"), aes(x = "", y = Percentage, fill = Risk_Level)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  labs(title = "North Region Overall Risk", x = NULL, y = NULL) +
+  theme_void() +
+  scale_fill_manual(values = risk_colors)
+
+
+central_pie <- ggplot(pie_data %>% filter(Region == "Central"), aes(x = "", y = Percentage, fill = Risk_Level)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  labs(title = "Central Region Overall Risk", x = NULL, y = NULL) +
+  theme_void() +
+  scale_fill_manual(values = risk_colors)
+
+
+south_pie <- ggplot(pie_data %>% filter(Region == "South"), aes(x = "", y = Percentage, fill = Risk_Level)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  labs(title = "South Region Overall Risk", x = NULL, y = NULL) +
+  theme_void() +
+  scale_fill_manual(values = risk_colors)
+
+
+pie_plot <- grid.arrange(north_pie, central_pie, south_pie, ncol = 3)
+#ggsave("Regional_Risk_Distribution_by_Level.png", plot = pie, width = 8, height = 6)
+pie_plot
+```
