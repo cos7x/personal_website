@@ -1,0 +1,12 @@
+---
+toc: false
+---
+
+## Project 1
+
+Here is my [project: "pqnumber" Calculator](/projects/project1.qmd)
+
+
+## Project 2
+
+Here is my [project 2](/projects/project2.qmd)

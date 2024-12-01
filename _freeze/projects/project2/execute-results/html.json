@@ -1,0 +1,15 @@
+{
+  "hash": "e70b63db5c34ca2b2016588d9ddf4a14",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntittle: \"Boost or Rest: How Caffeine and Sleep Influence Problem-Solving?\"\n---\n\n::: {.cell}\n\n```{.r .cell-code}\nrnorm(10)\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n [1]  0.07154757 -0.15980525 -1.69046249 -0.10285684 -0.31022612 -0.95839244\n [7]  1.24547656  1.14708474 -0.77122880 -0.57436601\n```\n\n\n:::\n:::",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

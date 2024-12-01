@@ -1,13 +1,21 @@
 project:
   type: website
+  resources: 
+    - cv.pdf
 
 website:
-  title: "Personal_website"
+  title: "Xianya Fu"
   navbar:
     right:
       - href: index.qmd
         text: Home
-      - about.qmd
+      - href: projects.qmd
+        text: projects
+      
+  page-footer: 
+    right: "&copy; 2024, Xianya Fu"
+
+
 
 format:
   html:
@@ -15,5 +23,8 @@ format:
     css: styles.css
     toc: true
 
+
+execute: 
+  freeze: auto
 
 

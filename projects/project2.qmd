@@ -1,0 +1,7 @@
+---
+tittle: "Boost or Rest: How Caffeine and Sleep Influence Problem-Solving?"
+---
+
+```{r}
+rnorm(10)
+```
