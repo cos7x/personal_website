@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: d4d6bba4-f7ef-4222-9a11-c2d5036ee2db
+      url: 'https://chic-meerkat-8153f9.netlify.app'
